@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-    <meta charset="UTF-g">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocean Drifter Dashboard</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path fill='%230056b3' d='M50 60C30 60 10 70 10 80s20 20 40 20 40-10 40-20-20-20-40-20z' /><rect fill='%23333' x='45' y='15' width='10' height='40'/><circle fill='%23d9534f' cx='50' cy='10' r='10'/></svg>">
@@ -16,205 +16,43 @@
     <!-- Chart.js --><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* --- Professional/Enterprise UI Style --- */
-        *, *::before, *::after {
-            border-radius: 0 !important;
-        }
+        /* --- Professional UI --- */
+        *, *::before, *::after { border-radius: 0 !important; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            background-color: #f8f9fa;
-        }
-        #map {
-            height: 100%;
-            width: 100%;
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
-        }
-        .header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #dee2e6;
-            color: #212529;
-        }
-        .sidebar {
-            background-color: #ffffff;
-            border-right: 1px solid #dee2e6;
-            width: 320px; /* Fixed width for both mobile overlay and desktop */
-        }
-        .info-box, .filter-box {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-        }
-        .info-title, .filter-title {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-        }
-        .info-data {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #212529;
-            word-break: break-all;
-        }
-        .info-data-small {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        /* Form inputs */
-        .form-input, .form-select {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #495057;
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid #ced4da;
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-        }
-        .form-input:focus, .form-select:focus {
-            color: #495057;
-            background-color: #fff;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-        }
-        .btn {
-            width: 100%;
-            padding: 0.6rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #fff;
-            cursor: pointer;
-            border: 1px solid;
-            transition: background-color .15s ease-in-out;
-            text-align: center;
-        }
-        .btn-primary {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-        .btn-primary:hover {
-            background-color: #004494;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            border-color: #6c757d;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        /* Leaflet controls */
-        .leaflet-control-layers, .leaflet-control-zoom, .leaflet-control-attribution {
-            border: 1px solid #adb5bd;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
-        }
-        .leaflet-bar a, .leaflet-bar a:hover {
-            border: none;
-            box-shadow: none;
-        }
-        #loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.7);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #343a40;
-        }
-        
-        /* --- Drifter Icon & Animation (MODIFIED) --- */
-        .drifter-icon-wrapper {
-            position: relative; /* Needed for absolute positioning of text */
-        }
-        .drifter-buoy-svg {
-            width: 32px;
-            height: 32px;
-            animation: blink 1.5s infinite ease-in-out; /* <-- ADDED to SVG only */
-        }
-        .drifter-label-container {
-            position: absolute;
-            bottom: -42px; /* <-- CHANGED from -38px to add space */
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
-            z-index: 1000;
-        }
-        .drifter-name-label {
-            white-space: nowrap;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 2px 5px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #333;
-            border: 1px solid #ccc;
-        }
-        .drifter-time-ago-label {
-            white-space: nowrap;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 1px 4px;
-            font-size: 0.6rem;
-            font-style: italic;
-            color: #555;
-            border: 1px solid #ccc;
-            border-top: none; /* Join it with the label above */
-        }
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-        /* Custom tooltip */
-        .drifter-tooltip {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            font-size: 0.9rem;
-            padding: 6px 8px;
+            background-color: #f8f9fa;
         }
-
-        /* --- NEW: Playback Controls --- */
-        #playback-slider {
-            width: 100%;
-            cursor: pointer;
+        #map { height: 100%; width: 100%; background-color: #e9ecef; border: 1px solid #dee2e6; }
+        .header { background-color: #ffffff; border-bottom: 1px solid #dee2e6; color: #212529; }
+        .sidebar { background-color: #ffffff; border-right: 1px solid #dee2e6; width: 320px; }
+        .info-box, .filter-box { background-color: #f8f9fa; border: 1px solid #dee2e6; }
+        .info-title, .filter-title {
+            font-weight: 600; color: #495057; margin-bottom: 0.5rem;
+            text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;
         }
-        #playback-timestamp {
-            font-size: 0.8rem;
-            color: #333;
-            font-weight: 500;
-            text-align: center;
-            margin-top: 4px;
-            background: #fff;
-            padding: 2px 0;
-            border: 1px solid #dee2e6;
-        }
-        /* Playback marker on map */
-        .playback-marker {
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-            border-radius: 50%;
-        }
+        .info-data { font-size: 1.1rem; font-weight: 500; color: #212529; word-break: break-all; }
+        .info-data-small { font-size: 0.9rem; color: #6c757d; }
+        .form-input, .form-select { width: 100%; padding: 0.5rem 0.75rem; font-size: 0.9rem; color: #495057; background-color: #fff; border: 1px solid #ced4da; }
+        .btn { width: 100%; padding: 0.6rem; font-size: 0.9rem; font-weight: 600; color: #fff; cursor: pointer; border: 1px solid; transition: background-color .15s ease-in-out; text-align: center; }
+        .btn-primary { background-color: #0056b3; border-color: #0056b3; }
+        .btn-primary:hover { background-color: #004494; }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        #loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600; color: #343a40; }
+        .drifter-icon-wrapper { animation: blink 1.5s infinite ease-in-out; position: relative; }
+        .drifter-buoy-svg { width: 32px; height: 32px; }
+        .drifter-name-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); white-space: nowrap; background-color: rgba(255, 255, 255, 0.7); padding: 2px 5px; font-size: 0.7rem; font-weight: 600; color: #333; border: 1px solid #ccc; pointer-events: none; z-index: 1000; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .drifter-tooltip { font-family: inherit; font-size: 0.9rem; padding: 6px 8px; }
     </style>
 </head>
 
 <body class="h-full flex flex-col">
 
-    <!-- Header --><header class="header w-full p-4 flex justify-between items-center shadow-sm z-50 relative">
+    <header class="header w-full p-4 flex justify-between items-center shadow-sm z-50 relative">
         <div class="flex items-center space-x-2">
-            <!-- Hamburger Toggle Button -->
             <button id="menu-toggle-btn" class="md:hidden p-1 text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
             </button>
             <h1 class="text-xl font-bold">UNIB Drifter Dashboard</h1>
         </div>
@@ -223,29 +61,20 @@
         </div>
     </header>
 
-    <!-- Main Content --><div class="flex-1 flex overflow-hidden">
-        
-        <!-- Sidebar (Mobile Hidden, Desktop Visible) -->
-        <aside id="sidebar" class="sidebar h-full overflow-y-auto p-5 space-y-4 flex-shrink-0
-                                 fixed md:relative z-40
-                                 transform -translate-x-full md:translate-x-0
-                                 transition-transform duration-300 ease-in-out">
-            
-            <!-- Mobile Menu Header -->
+    <div class="flex-1 flex overflow-hidden">
+        <aside id="sidebar" class="sidebar h-full overflow-y-auto p-5 space-y-4 flex-shrink-0 fixed md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="flex justify-between items-center pb-2 border-b border-gray-300 md:hidden">
                 <h2 class="text-lg font-bold">Menu</h2>
                 <button id="menu-close-btn" class="p-1 text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
-            <!-- Filters Section --><div class="filter-box p-3">
+            <div class="filter-box p-3">
                 <h2 class="filter-title border-b border-gray-300 pb-2 mb-3">Filters</h2>
                 <div class="space-y-3">
                     <div>
-                        <label for="drifter-select" class="block text-sm font-medium text-gray-700 mb-1">Drifter ID</label>
+                        <label for="drifter-select" class="block text-sm font-medium text-gray-700 mb-1">Drifter Name</label>
                         <select id="drifter-select" class="form-select">
                             <option value="all">All Drifters</option>
                         </select>
@@ -262,36 +91,24 @@
                 </div>
             </div>
 
-            <!-- *** NEW: Playback Controls Section *** -->
-            <div id="playback-control-box" class="filter-box p-3" style="display: none;">
-                <h2 class="filter-title border-b border-gray-300 pb-2 mb-3">Playback Controls</h2>
-                <div class="space-y-3">
-                    <button id="play-pause-button" class="btn btn-secondary">Play</button>
-                    <input type="range" id="playback-slider" min="0" max="100" value="0" class="mt-2">
-                    <div id="playback-timestamp">---</div>
-                </div>
-            </div>
-
-            <!-- Data Actions Section -->
             <div class="filter-box p-3">
                 <h2 class="filter-title border-b border-gray-300 pb-2 mb-3">Data Actions</h2>
                 <div class="space-y-2">
-                    <button id="export-csv-button" class="btn btn-secondary">Export as CSV</button>
-                    <button id="import-csv-button" class="btn btn-secondary">Import CSV Data</button>
-                    <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+                    <button id="export-csv-button" class="btn btn-secondary">Export Filtered as CSV</button>
+                    <button id="import-csv-btn-trigger" class="btn btn-secondary">Import Local File (CSV/GPX)</button>
+                    <input type="file" id="csv-file-input" accept=".csv,.gpx" class="hidden">
                 </div>
             </div>
 
-            <!-- Latest Data Section (MODIFIED) --><div class="info-box p-3">
+            <div class="info-box p-3">
                 <h2 class="info-title border-b border-gray-300 pb-2 mb-3">Latest Data</h2>
                 <div id="latest-data-content" class="space-y-3">
-                    <p id="latest-data-placeholder" class="text-sm text-gray-500">Select a single drifter and apply filters to see latest data.</p>
+                    <p id="latest-data-placeholder" class="text-sm text-gray-500">Select a drifter or import a file to view metrics.</p>
                     <div id="latest-data-info" class="hidden space-y-3">
                         <div>
                             <div class="info-title">Drifter Name</div>
                             <div id="latest-name" class="info-data">---</div>
-                            <!-- *** TIME AGO ELEMENT FOR SIDEBAR *** -->
-                            <div id="latest-ago" class="info-data-small italic">---</div>
+                            <div id="latest-time-ago" class="info-data-small -mt-1 text-gray-500"></div>
                         </div>
                         <div>
                             <div class="info-title">Last Update</div>
@@ -303,918 +120,374 @@
                             <div id="latest-lon" class="info-data">---</div>
                         </div>
                         <div>
-                            <div class="info-title">Battery</div>
-                            <div id="latest-battery" class="info-data">---</div>
-                        </div>
-                        <div>
                             <div class="info-title">Device Info</div>
                             <div id="latest-id" class="info-data-small">ID: ---</div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </aside>
 
-        <!-- Map Area --><main class="flex-1 h-full relative z-0">
-            <!-- Mobile Overlay -->
+        <main class="flex-1 h-full relative z-0">
             <div id="menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
-            
             <div id="map"></div>
-            <div id="loading-overlay">
-                <span>Loading Map & Data...</span>
-            </div>
+            <div id="loading-overlay"><span>Processing Ocean Data...</span></div>
         </main>
     </div>
 
-    <!-- SST Chart Modal -->
+    <!-- Metrics Chart Modal -->
     <div id="sst-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[10001] hidden items-center justify-center p-4">
-        <div id="sst-modal-content" class="bg-white p-5 max-w-3xl w-full">
+        <div id="sst-modal-content" class="bg-white p-5 max-w-4xl w-full shadow-2xl">
             <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-3">
-                <h2 id="sst-modal-title" class="text-lg font-bold">SST Time-series</h2>
-                <button id="sst-modal-close-btn" class="p-1 text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <h2 id="sst-modal-title" class="text-lg font-bold">Metrics Time-series</h2>
+                <div class="flex items-center space-x-3">
+                    <select id="metric-selector" class="form-select py-1 px-2 text-sm border-gray-300 w-40"></select>
+                    <button id="sst-modal-close-btn" class="p-1 text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
             </div>
-            <div class="relative h-64 md:h-96">
-                <canvas id="sst-chart"></canvas>
+            <div class="relative h-64 md:h-96"><canvas id="sst-chart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[10002] hidden items-center justify-center p-4">
+        <div class="bg-white p-6 max-w-md w-full shadow-lg border border-gray-300 text-center">
+            <h2 id="notification-title" class="text-xl font-bold mb-4">Notification</h2>
+            <p id="notification-message" class="text-gray-600 mb-6"></p>
+            <div class="flex flex-col space-y-2">
+                <button id="modal-upload-btn" class="btn btn-primary hidden">Upload Local File</button>
+                <button id="notification-close-btn" class="btn btn-secondary">Close</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // --- 1. CONFIGURATION ---
+        // --- 1. CONFIG & GLOBALS ---
         const SUPABASE_URL = 'https://oeapjvhpekxqweybgbkn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lYXBqdmhwZWt4cXdleWJnYmtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1NDk2NzUsImV4cCI6MjA3NzEyNTY3NX0.iC3GVorZid05A1PiJ_tmq3WmOLmPE_IS4FmHLS3TJPk';
 
-        // --- 2. SUPABASE & UI ELEMENTS ---
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const statusEl = document.getElementById('connection-status');
         const loadingEl = document.getElementById('loading-overlay');
-
-        // Menu elements
-        const menuToggleBtn = document.getElementById('menu-toggle-btn');
-        const menuCloseBtn = document.getElementById('menu-close-btn');
         const sidebar = document.getElementById('sidebar');
         const menuOverlay = document.getElementById('menu-overlay');
-        
-        // Filter elements
         const drifterSelect = document.getElementById('drifter-select');
         const startTimeInput = document.getElementById('start-time');
         const endTimeInput = document.getElementById('end-time');
-        const filterButton = document.getElementById('filter-button');
-
-        // Data Action elements
-        const exportCsvButton = document.getElementById('export-csv-button');
-        const importCsvButton = document.getElementById('import-csv-button');
-        const csvFileInput = document.getElementById('csv-file-input');
-
-        // Sidebar data elements
-        const latestDataContent = document.getElementById('latest-data-content');
-        const latestDataPlaceholder = document.getElementById('latest-data-placeholder');
-        const latestDataInfo = document.getElementById('latest-data-info');
         const latestNameEl = document.getElementById('latest-name');
-        const latestAgoEl = document.getElementById('latest-ago');
         const latestIdEl = document.getElementById('latest-id');
         const timestampEl = document.getElementById('latest-timestamp');
+        const timeAgoEl = document.getElementById('latest-time-ago');
         const latEl = document.getElementById('latest-lat');
         const lonEl = document.getElementById('latest-lon');
-        const batteryEl = document.getElementById('latest-battery');
-
-        // Modal elements
         const sstModal = document.getElementById('sst-modal');
         const sstModalTitle = document.getElementById('sst-modal-title');
-        const sstModalCloseBtn = document.getElementById('sst-modal-close-btn');
+        const metricSelector = document.getElementById('metric-selector');
         const sstChartCanvas = document.getElementById('sst-chart').getContext('2d');
+        const notificationModal = document.getElementById('notification-modal');
+        const csvFileInput = document.getElementById('csv-file-input');
 
-        // *** NEW: Playback UI Elements ***
-        const playbackControlBox = document.getElementById('playback-control-box');
-        const playPauseBtn = document.getElementById('play-pause-button');
-        const playbackSlider = document.getElementById('playback-slider');
-        const playbackTimestampLabel = document.getElementById('playback-timestamp');
-
-
-        // --- 3. MAP INITIALIZATION ---
         const map = L.map('map').setView([0, 0], 3);
+        const dataLayers = L.layerGroup().addTo(map);
+        let drifterInfoCache = {};
+        const drifterColors = ['#0056b3', '#d9534f', '#5cb85c', '#f0ad4e', '#5bc0de', '#337ab7', '#c9302c', '#449d44', '#ec971f', '#46b8da'];
+        let sstChartInstance = null;
+        let currentPositionsData = null;
 
-        // Basemaps
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri'
-        });
-        const ocean = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri'
-        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM' }).addTo(map);
 
-        L.control.layers({
-            "Street Map": osm,
-            "Satellite": satellite,
-            "Ocean Base": ocean
-        }).addTo(map);
+        // --- 2. CORE LOGIC FUNCTIONS ---
 
-        // Map Layers
-        const dataLayers = L.layerGroup().addTo(map); // Main group for all drifter data
-        const playbackLayer = L.layerGroup(); // *** NEW: Layer for playback markers ***
-        let drifterInfoCache = {}; // Cache to store {id: name}
-        let drifterColorMap = {}; // *** NEW: Cache for {id: color} ***
-        
-        // Color palette for multiple drifters
-        const drifterColors = [
-            '#0056b3', '#d9534f', '#5cb85c', '#f0ad4e', '#5bc0de', 
-            '#337ab7', '#c9302c', '#449d44', '#ec971f', '#46b8da'
-        ];
-        let currentSubscription = null;
-        let sstChartInstance = null; // To hold the Chart.js instance
-
-        // *** NEW: Playback State Variables ***
-        let playbackData = {};
-        let playbackTimer = null;
-        let playbackIndex = 0;
-        const playbackSpeed = 200; // Milliseconds per step
-        let isPlaybackDataReady = false;
-        let isPlaying = false;
-
-
-        // --- 4. DATA FETCHING & PLOTTING ---
-
-        async function populateDrifterDropdown() {
-            const { data, error } = await db.from('drifters').select('id, name');
-            if (error) {
-                console.error('Error fetching drifters list:', error);
-                return;
-            }
-            
-            drifterInfoCache = {}; // Clear cache
-            data.forEach(drifter => {
-                drifterInfoCache[drifter.id] = drifter.name; // Store name in cache
-                const option = document.createElement('option');
-                option.value = drifter.id;
-                option.textContent = drifter.name; // Changed: Only show name
-                drifterSelect.appendChild(option);
-            });
-        }
-        
-        function buildFilteredQuery() {
-            const selectedDrifterId = drifterSelect.value;
-            const startTime = startTimeInput.value;
-            const endTime = endTimeInput.value;
-
-            let query = db.from('drifter_positions')
-                .select('*')
-                .order('timestamp', { ascending: false })
-                .limit(2000); // Limit to 2000 points
-
-            if (selectedDrifterId !== 'all') {
-                query = query.eq('drifter_id', selectedDrifterId);
-            }
-            if (startTime) {
-                query = query.gte('timestamp', new Date(startTime).toISOString());
-            }
-            if (endTime) {
-                query = query.lte('timestamp', new Date(endTime).toISOString());
-            }
-            return query;
+        function showNotificationModal(title, message, showUpload = false) {
+            document.getElementById('notification-title').textContent = title;
+            document.getElementById('notification-message').textContent = message;
+            document.getElementById('modal-upload-btn').classList.toggle('hidden', !showUpload);
+            notificationModal.classList.remove('hidden');
+            notificationModal.classList.add('flex');
         }
 
-        async function fetchAndPlotData() {
-            console.log('Fetching drifter data...');
-            statusEl.textContent = 'Fetching...';
-            statusEl.className = 'text-sm font-medium px-2 py-1 bg-yellow-200 text-yellow-800';
-            loadingEl.style.display = 'flex';
-            
-            // Clear all layers and reset state
-            dataLayers.clearLayers();
-            drifterColorMap = {}; // Reset color map
-            resetPlayback(); // *** NEW: Reset playback on new fetch ***
-            clearSidebar();
+        function hideNotificationModal() { notificationModal.classList.add('hidden'); notificationModal.classList.remove('flex'); }
 
-            const query = buildFilteredQuery();
-            const { data, error } = await query;
-
-            if (error) {
-                console.error('Error fetching data:', error);
-                statusEl.textContent = 'Error';
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-red-200 text-red-800';
-                loadingEl.textContent = `Error: ${error.message}`;
-                return;
-            }
-
-            if (data && data.length > 0) {
-                console.log(`Fetched ${data.length} points.`);
-                plotData(data); // Plot main tracks
-                setupPlayback(data); // *** NEW: Setup playback data ***
-                
-                // Update sidebar only if a single drifter is selected
-                if (drifterSelect.value !== 'all') {
-                    updateSidebar(data[0]); // data[0] is the latest
-                }
-
-                statusEl.textContent = 'Live';
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-green-200 text-green-800';
-            } else {
-                console.log('No data found for these filters.');
-                statusEl.textContent = 'No Data';
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-gray-200 text-gray-600';
-            }
-            loadingEl.style.display = 'none';
-        }
-
-        function plotData(data) {
-            // Group data by drifter_id
-            const dataByDrifter = data.reduce((acc, pos) => {
-                if (!acc[pos.drifter_id]) {
-                    acc[pos.drifter_id] = [];
-                }
-                acc[pos.drifter_id].push(pos);
-                return acc;
-            }, {});
-
-            let allLatLngs = []; // For map bounds
-            let drifterIndex = 0;
-
-            for (const drifterId in dataByDrifter) {
-                const positions = dataByDrifter[drifterId];
-                // Data is newest first, reverse for chronological plot
-                const latLngs = positions.map(pos => [pos.latitude, pos.longitude]).reverse();
-                allLatLngs.push(...latLngs);
-
-                // *** MODIFIED: Use color map ***
-                const color = drifterColors[drifterIndex % drifterColors.length];
-                drifterColorMap[drifterId] = color; // Store color for playback
-                
-                // Handle names for both Supabase data (in cache) and local CSV data
-                const drifterName = drifterInfoCache[drifterId] || 
-                                    (drifterId.startsWith('local_') ? drifterId.replace(/_/g, ' ') : `Drifter ${drifterId.substring(0, 4)}`);
-                drifterIndex++;
-
-                // 1. Create Dotted Polyline
-                L.polyline(latLngs, { 
-                    color: color, 
-                    weight: 3,
-                    dashArray: '5, 10'
-                }).addTo(dataLayers);
-
-                // 2. Create Tooltip Markers
-                positions.forEach(pos => {
-                    const lat = pos.latitude;
-                    const lon = pos.longitude;
-                    const time = new Date(pos.timestamp).toLocaleString();
-                    const tooltipContent = `
-                        <div>
-                            <b>Drifter:</b> ${drifterName}<br>
-                            <b>Time:</b> ${time}<br>
-                            <b>Lat:</b> ${lat.toFixed(6)}<br>
-                            <b>Lon:</b> ${lon.toFixed(6)}
-                        </div>`;
-                    
-                    L.circleMarker([lat, lon], { radius: 6, color: 'transparent', opacity: 0, fillOpacity: 0 })
-                        .bindTooltip(tooltipContent, { sticky: true, className: 'drifter-tooltip' })
-                        .addTo(dataLayers);
-                });
-
-                // 3. Create Blinking Icon for Latest Position (MODIFIED)
-                const latestData = positions[0]; // Newest data
-                const endPoint = [latestData.latitude, latestData.longitude];
-                const endTime = new Date(latestData.timestamp).toLocaleString();
-                const timeAgo = formatTimeAgo(latestData.timestamp); 
-                const battery = latestData.battery_level ? `${latestData.battery_level.toFixed(2)}v` : 'N/A';
-                const popupContent = `
-                    <div>
-                        <b>${drifterName}</b><br>
-                        <b>Latest Position</b><br>
-                        ${endTime}<br>
-                        Coords: ${endPoint[0].toFixed(4)}, ${endPoint[1].toFixed(4)}<br>
-                        Batt: ${battery}
-                    </div>`;
-
-                const buoyIconHTML = `
-                    <div>
-                        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" class="drifter-buoy-svg" style="margin: 0 auto; display: block;">
-                            <path class="buoy-body" fill="${color}" stroke="#333" stroke-width="1"
-                                  d="M16 18 C10 18, 6 21, 6 26 C6 31, 10 34, 16 34 C22 34, 26 31, 26 26 C26 21, 22 18, 16 18 Z" />
-                            <line class="buoy-antenna" stroke="#333" stroke-width="2" x1="16" y1="18" x2="16" y2="4" />
-                            <circle class="buoy-light" fill="${color}" stroke="#333" stroke-width="1" cx="16" cy="3" r="3" />
-                        </svg>
-                        <div class="drifter-label-container">
-                            <div class="drifter-name-label">${drifterName}</div>
-                            <div class="drifter-time-ago-label">(${timeAgo})</div>
-                        </div>
-                    </div>`;
-
-                const buoyIcon = L.divIcon({
-                    className: 'drifter-icon-wrapper',
-                    html: buoyIconHTML,
-                    iconSize: [32, 32], // SVG size
-                    iconAnchor: [16, 32] // Anchor at bottom-center of SVG
-                });
-
-                L.marker(endPoint, { icon: buoyIcon })
-                    .bindPopup(popupContent)
-                    .on('mouseover', function (e) { this.openPopup(); })
-                    .on('mouseout', function (e) { this.closePopup(); })
-                    .on('click', () => {
-                        // Pass positions (newest first) and name
-                        showSstChartModal(positions, drifterName);
-                    })
-                    .addTo(dataLayers);
-            }
-
-            // Fit map to all tracks
-            if (allLatLngs.length > 0) {
-                map.fitBounds(L.latLngBounds(allLatLngs).pad(0.1));
-            }
-        }
-
-        function formatTimeAgo(timestamp) {
-            const now = new Date();
-            const past = new Date(timestamp);
-            const seconds = Math.floor((now - past) / 1000);
-
-            let interval = seconds / 31536000; // seconds in a year
-            if (interval > 1) {
-                const val = Math.floor(interval);
-                return `${val} ${val === 1 ? "year" : "years"} ago`;
-            }
-            interval = seconds / 2592000; // seconds in a month
-            if (interval > 1) {
-                const val = Math.floor(interval);
-                return `${val} ${val === 1 ? "month" : "months"} ago`;
-            }
-            interval = seconds / 86400; // seconds in a day
-            if (interval > 1) {
-                const val = Math.floor(interval);
-                return `${val} ${val === 1 ? "day" : "days"} ago`;
-            }
-            interval = seconds / 3600; // seconds in an hour
-            if (interval > 1) {
-                const val = Math.floor(interval);
-                return `${val} ${val === 1 ? "hour" : "hours"} ago`;
-            }
-            interval = seconds / 60; // seconds in a minute
-            if (interval > 1) {
-                const val = Math.floor(interval);
-                return `${val} ${val === 1 ? "minute" : "minutes"} ago`;
-            }
-            const val = Math.floor(seconds);
-            if (val < 5) {
-                return "just now";
-            }
-            return `${val} ${val === 1 ? "second" : "seconds"} ago`;
+        function hideSstChartModal() {
+            sstModal.classList.add('hidden'); sstModal.classList.remove('flex');
+            if (sstChartInstance) { sstChartInstance.destroy(); sstChartInstance = null; }
         }
 
         function clearSidebar() {
-            latestDataPlaceholder.style.display = 'block';
-            latestDataInfo.classList.add('hidden');
-            latestNameEl.textContent = '---';
-            latestAgoEl.textContent = '---'; 
-            latestIdEl.textContent = 'ID: ---';
-            timestampEl.textContent = '---';
-            latEl.textContent = '---';
-            lonEl.textContent = '---';
-            batteryEl.textContent = '---';
+            const placeholder = document.getElementById('latest-data-placeholder');
+            if (placeholder) placeholder.style.display = 'block'; 
+            document.getElementById('latest-data-info').classList.add('hidden');
         }
 
         function updateSidebar(latestData) {
-            if (!latestData) {
-                clearSidebar();
-                return;
-            }
-            
-            latestDataPlaceholder.style.display = 'none';
-            latestDataInfo.classList.remove('hidden');
-
-            const timestampDate = new Date(latestData.timestamp); // Create Date object once
-
-            latestNameEl.textContent = drifterInfoCache[latestData.drifter_id] || 'Unknown';
-            latestAgoEl.textContent = `(${formatTimeAgo(timestampDate)})`; 
+            if (!latestData) { clearSidebar(); return; }
+            const placeholder = document.getElementById('latest-data-placeholder');
+            if (placeholder) placeholder.style.display = 'none'; 
+            document.getElementById('latest-data-info').classList.remove('hidden');
+            latestNameEl.textContent = drifterInfoCache[latestData.drifter_id] || latestData.drifter_id.replace(/local_|_\d+/g, ' ');
+            timeAgoEl.textContent = formatTimeAgo(latestData.timestamp);
             latestIdEl.textContent = `ID: ${latestData.drifter_id}`;
-            timestampEl.textContent = timestampDate.toLocaleString(); 
-            latEl.textContent = latestData.latitude.toFixed(6);
+            timestampEl.textContent = new Date(latestData.timestamp).toLocaleString();
+            latEl.textContent = latestData.latitude.toFixed(6); 
             lonEl.textContent = latestData.longitude.toFixed(6);
-            
-            if (latestData.battery_level) {
-                batteryEl.textContent = `${latestData.battery_level.toFixed(2)}v`;
-            } else {
-                batteryEl.textContent = 'N/A';
-            }
         }
 
-        // --- 5. MODAL & CHARTING FUNCTIONS ---
-
-        function showSstChartModal(positionsData, drifterName) {
-            // Data is newest first, reverse it for chronological chart
-            const chartData = positionsData.slice().reverse(); 
-
-            const labels = chartData.map(pos => new Date(pos.timestamp).toLocaleString());
-            const sstValues = chartData.map(pos => {
-                if (pos.other_data && (pos.other_data.sst_c !== null || pos.other_data.sst_c !== undefined)) {
-                    return pos.other_data.sst_c;
-                }
-                return null; // Handle missing data
-            });
-            
-            const hasSstData = sstValues.some(val => val !== null);
-
-            // Destroy old chart if it exists
-            if (sstChartInstance) {
-                sstChartInstance.destroy();
+        function formatTimeAgo(timestamp) {
+            const past = new Date(timestamp); 
+            if (isNaN(past.getTime())) return "unknown";
+            const seconds = Math.floor((new Date() - past) / 1000);
+            if (seconds < 60) return "just now";
+            const intervals = { year: 31536000, month: 2592000, day: 86400, hour: 3600, minute: 60 };
+            for (let name in intervals) {
+                let interval = Math.floor(seconds / intervals[name]);
+                if (interval >= 1) return interval + " " + name + (interval > 1 ? "s" : "") + " ago";
             }
-
-            sstModalTitle.textContent = `SST Time-series for ${drifterName}`;
-            
-            if (!hasSstData) {
-                 sstChartCanvas.canvas.style.display = 'none';
-                 if (!document.getElementById('no-sst-data')) {
-                    const noDataEl = document.createElement('p');
-                    noDataEl.id = 'no-sst-data';
-                    noDataEl.className = 'text-center text-gray-500 py-10';
-                    noDataEl.textContent = 'No SST (Sea Surface Temperature) data available for this drifter.';
-                    sstChartCanvas.canvas.parentNode.appendChild(noDataEl);
-                 }
-            } else {
-                sstChartCanvas.canvas.style.display = 'block';
-                const noDataEl = document.getElementById('no-sst-data');
-                if (noDataEl) noDataEl.remove();
-
-                sstChartInstance = new Chart(sstChartCanvas, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Sea Surface Temp (°C)',
-                            data: sstValues,
-                            borderColor: '#0056b3',
-                            backgroundColor: 'rgba(0, 86, 179, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1,
-                            spanGaps: true 
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Timestamp'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Temperature (°C)'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Show the modal
-            sstModal.classList.remove('hidden');
-            sstModal.classList.add('flex'); 
+            return "just now";
         }
 
-        function hideSstChartModal() {
-            sstModal.classList.add('hidden');
-            sstModal.classList.remove('flex');
-            if (sstChartInstance) {
-                sstChartInstance.destroy();
-                sstChartInstance = null;
-            }
-            const noDataEl = document.getElementById('no-sst-data');
-            if (noDataEl) noDataEl.remove();
-        }
-
-        // --- 6. REAL-TIME SUBSCRIPTION ---
-        function subscribeToChanges() {
-            const selectedDrifterId = drifterSelect.value;
-            console.log(`Subscribing to changes for: ${selectedDrifterId}`);
-
-            if (currentSubscription) {
-                db.removeChannel(currentSubscription);
-                currentSubscription = null;
-            }
-
-            let channelConfig = {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'drifter_positions',
-            };
-
-            if (selectedDrifterId !== 'all') {
-                channelConfig.filter = `drifter_id=eq.${selectedDrifterId}`;
-            }
-
-            currentSubscription = db.channel('public:drifter_positions')
-                .on('postgres_changes', channelConfig, (payload) => {
-                    console.log('New data received!', payload);
-                    statusEl.textContent = 'Updating...';
-                    statusEl.className = 'text-sm font-medium px-2 py-1 bg-blue-200 text-blue-800';
-                    fetchAndPlotData(); // Re-fetch all data to re-apply filters & playback
-                })
-                .subscribe((status, err) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log('Real-time subscription active!');
-                        statusEl.textContent = 'Live';
-                        statusEl.className = 'text-sm font-medium px-2 py-1 bg-green-200 text-green-800';
-                    } else if (status === 'TIMED_OUT') {
-                        console.warn('Real-time subscription timed out.');
-                        statusEl.textContent = 'Offline';
-                        statusEl.className = 'text-sm font-medium px-2 py-1 bg-gray-200 text-gray-600';
-                    } else if (err) {
-                        console.error('Real-time subscription error:', err);
-                        statusEl.textContent = 'Error';
-                        statusEl.className = 'text-sm font-medium px-2 py-1 bg-red-200 text-red-800';
-                    }
-                });
-        }
-
-        // --- 7. DATA ACTIONS (CSV Import/Export) ---
-
-        async function exportFilteredData() {
-            statusEl.textContent = 'Exporting...';
-            statusEl.className = 'text-sm font-medium px-2 py-1 bg-blue-200 text-blue-800';
-            
-            const query = buildFilteredQuery();
-            const { data, error } = await query;
-
-            if (error) {
-                console.error('Error fetching data for export:', error);
-                statusEl.textContent = 'Export Error';
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-red-200 text-red-800';
-                return;
-            }
-            
-            if (!data || data.length === 0) {
-                console.log('No data to export.');
-                statusEl.textContent = 'No Data';
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-gray-200 text-gray-600';
-                return;
-            }
-
-            const csv = convertToCSV(data);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            const fileName = `drifter_export_${new Date().toISOString().split('T')[0]}.csv`;
-            link.setAttribute('download', fileName);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            statusEl.textContent = 'Exported';
-            statusEl.className = 'text-sm font-medium px-2 py-1 bg-green-200 text-green-800';
-        }
-
-        function convertToCSV(data) {
-            const headers = Object.keys(data[0]);
-            const csvRows = [headers.join(',')]; 
-
-            for (const row of data) {
-                const values = headers.map(header => {
-                    let val = row[header];
-                    if (val === null || val === undefined) {
-                        return '';
-                    }
-                    if (typeof val === 'object') {
-                        val = `"${JSON.stringify(val).replace(/"/g, '""')}"`;
-                    } else {
-                        val = `"${String(val).replace(/"/g, '""')}"`;
-                    }
-                    return val;
-                });
-                csvRows.push(values.join(','));
-            }
-            return csvRows.join('\n');
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            statusEl.textContent = 'Parsing CSV...';
-            statusEl.className = 'text-sm font-medium px-2 py-1 bg-yellow-200 text-yellow-800';
-            loadingEl.style.display = 'flex';
-            
-            // Clear all layers and reset state
-            dataLayers.clearLayers();
-            drifterColorMap = {};
-            resetPlayback(); // *** NEW: Reset playback on import ***
-            clearSidebar();
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target.result;
-                const parsedData = parseCSV(text);
-                
-                if (parsedData.length === 0) {
-                    statusEl.textContent = 'CSV Error';
-                    statusEl.className = 'text-sm font-medium px-2 py-1 bg-red-200 text-red-800';
-                    loadingEl.style.display = 'none';
-                    return;
-                }
-                
-                if (currentSubscription) {
-                    db.removeChannel(currentSubscription);
-                    currentSubscription = null;
-                }
-
-                // Plot the local data
-                plotData(parsedData);
-                setupPlayback(parsedData); // *** NEW: Setup playback for CSV ***
-                
-                statusEl.textContent = 'Displaying Local CSV';
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-blue-200 text-blue-800';
-                loadingEl.style.display = 'none';
-            };
-            
-            reader.readAsText(file);
-            event.target.value = null;
-        }
-
-        function parseCSV(text) {
+        async function populateDrifterDropdown() {
             try {
-                const lines = text.split('\n').filter(line => line.trim() !== '');
-                if (lines.length < 2) throw new Error('No data rows in CSV.');
-
-                const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-                
-                const latIndex = headers.indexOf('latitude');
-                const lonIndex = headers.indexOf('longitude');
-                const timeIndex = headers.indexOf('timestamp');
-                const idIndex = headers.indexOf('drifter_id') !== -1 ? headers.indexOf('drifter_id') : headers.indexOf('name');
-                const batteryIndex = headers.indexOf('battery_level');
-
-                if (latIndex === -1 || lonIndex === -1) {
-                    throw new Error('CSV must contain "latitude" and "longitude" columns.');
-                }
-
-                const data = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-                    
-                    const lat = parseFloat(values[latIndex]);
-                    const lon = parseFloat(values[lonIndex]);
-
-                    if (isNaN(lat) || isNaN(lon)) continue; 
-
-                    const drifter_id = idIndex !== -1 ? values[idIndex] : 'local_data';
-                    const timestamp = timeIndex !== -1 ? (values[timeIndex] || new Date().toISOString()) : new Date().toISOString();
-                    const battery_level = batteryIndex !== -1 ? parseFloat(values[batteryIndex]) : null;
-                    
-                    const sstIndex = headers.indexOf('sst_c');
-                    let other_data = null;
-                    if (sstIndex !== -1) {
-                        const sst = parseFloat(values[sstIndex]);
-                        if (!isNaN(sst)) {
-                            other_data = { sst_c: sst };
-                        }
-                    }
-
-                    data.push({
-                        id: i, 
-                        drifter_id: drifter_id,
-                        timestamp: new Date(timestamp).toISOString(), 
-                        latitude: lat,
-                        longitude: lon,
-                        battery_level: isNaN(battery_level) ? null : battery_level,
-                        other_data: other_data
-                    });
-                }
-                
-                return data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                
-            } catch (error) {
-                console.error('Error parsing CSV:', error);
-                statusEl.textContent = `CSV Error: ${error.message}`;
-                statusEl.className = 'text-sm font-medium px-2 py-1 bg-red-200 text-red-800';
-                return [];
+                const { data, error } = await db.from('drifters').select('id, name');
+                if (error) throw error;
+                data.forEach(drifter => {
+                    drifterInfoCache[drifter.id] = drifter.name;
+                    const option = document.createElement('option');
+                    option.value = drifter.id;
+                    option.textContent = drifter.name; 
+                    drifterSelect.appendChild(option);
+                });
+            } catch (err) {
+                showNotificationModal("Connection Issue", "Database unreachable. Please upload a local file.");
             }
         }
         
-        // --- 8. NEW: PLAYBACK FUNCTIONS ---
+        async function fetchAndPlotData() {
+            statusEl.textContent = 'Fetching...';
+            loadingEl.style.display = 'flex';
+            dataLayers.clearLayers(); clearSidebar();
+            try {
+                const selectedDrifterId = drifterSelect.value;
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                let query = db.from('drifter_positions').select('*').order('timestamp', { ascending: false }).limit(2000); 
+                if (selectedDrifterId !== 'all') query = query.eq('drifter_id', selectedDrifterId);
+                if (startTime) query = query.gte('timestamp', new Date(startTime).toISOString());
+                if (endTime) query = query.lte('timestamp', new Date(endTime).toISOString());
 
-        /**
-         * Resets and hides the playback controls.
-         */
-        function resetPlayback() {
-            stopPlayback();
-            isPlaybackDataReady = false;
-            playbackData = {};
-            playbackIndex = 0;
-            playbackControlBox.style.display = 'none';
-            playbackSlider.value = 0;
-            playbackSlider.max = 0;
-            playbackTimestampLabel.textContent = '---';
-            playbackLayer.clearLayers();
-            if (map.hasLayer(playbackLayer)) {
-                map.removeLayer(playbackLayer);
-            }
+                const { data, error } = await query;
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    plotData(data);
+                    if (selectedDrifterId !== 'all') updateSidebar(data[0]); 
+                    statusEl.textContent = 'Live';
+                    statusEl.className = 'text-sm font-medium px-2 py-1 bg-green-200 text-green-800';
+                } else {
+                    statusEl.textContent = 'No Data';
+                    showNotificationModal("No Current Data", "No data matches your filters in the database.");
+                }
+            } catch (err) {
+                statusEl.textContent = 'Offline';
+                showNotificationModal("Database Offline", "Unable to connect to the server.");
+            } finally { loadingEl.style.display = 'none'; }
         }
 
-        /**
-         * Sets up the playback data and UI based on fetched data.
-         * @param {Array<Object>} data The data from Supabase (newest first).
-         */
-        function setupPlayback(data) {
-            // Group data by drifter_id
+        function plotData(data) {
             const dataByDrifter = data.reduce((acc, pos) => {
-                if (!acc[pos.drifter_id]) {
-                    acc[pos.drifter_id] = [];
-                }
+                if (!acc[pos.drifter_id]) acc[pos.drifter_id] = [];
                 acc[pos.drifter_id].push(pos);
                 return acc;
             }, {});
 
-            // Reverse each drifter's data to be chronological (oldest first)
-            Object.values(dataByDrifter).forEach(arr => arr.reverse());
+            let allLatLngs = []; let drifterIndex = 0;
+            for (const drifterId in dataByDrifter) {
+                const positions = dataByDrifter[drifterId];
+                const latLngs = positions.map(pos => [pos.latitude, pos.longitude]).reverse();
+                allLatLngs.push(...latLngs);
+                const color = drifterColors[drifterIndex % drifterColors.length];
+                const drifterName = drifterInfoCache[drifterId] || drifterId.replace(/local_|_\d+/g, ' ').replace(/_/g, ' ');
+                drifterIndex++;
 
-            // Find the length of the *longest* track
-            const maxLength = Math.max(0, ...Object.values(dataByDrifter).map(arr => arr.length));
+                L.polyline(latLngs, { color: color, weight: 3, dashArray: '5, 10' }).addTo(dataLayers);
+                positions.forEach(pos => {
+                    const ts = new Date(pos.timestamp).toLocaleString();
+                    const tooltip = `<div><b>${drifterName}</b><br>${ts}<br>Lat: ${pos.latitude.toFixed(4)} Lon: ${pos.longitude.toFixed(4)}</div>`;
+                    L.circleMarker([pos.latitude, pos.longitude], { radius: 6, color: 'transparent', opacity: 0, fillOpacity: 0 })
+                        .bindTooltip(tooltip, { sticky: true, className: 'drifter-tooltip' })
+                        .addTo(dataLayers);
+                });
 
-            // Don't show playback if there's no movement to show
-            if (maxLength < 2) {
-                resetPlayback();
-                return;
+                const latest = positions[0]; 
+                const buoyHTML = `<div style="text-align: center;"><svg viewBox="0 0 32 32" class="drifter-buoy-svg"><path fill="${color}" stroke="#333" d="M16 18 C10 18, 6 21, 6 26 C6 31, 10 34, 16 34 C22 34, 26 31, 26 26 C26 21, 22 18, 16 18 Z" /><line stroke="#333" stroke-width="2" x1="16" y1="18" x2="16" y2="4" /><circle fill="${color}" stroke="#333" cx="16" cy="3" r="3" /></svg><div class="drifter-name-label">${drifterName}</div></div>`;
+                const buoyIcon = L.divIcon({ className: 'drifter-icon-wrapper', html: buoyHTML, iconSize: [32, 32], iconAnchor: [16, 32] });
+
+                L.marker([latest.latitude, latest.longitude], { icon: buoyIcon })
+                    .bindPopup(`<div><b>${drifterName}</b><br>Latest: ${new Date(latest.timestamp).toLocaleString()}</div>`)
+                    .on('mouseover', function(){ this.openPopup(); })
+                    .on('mouseout', function(){ this.closePopup(); })
+                    .on('click', () => showMetricsChartModal(positions, drifterName))
+                    .addTo(dataLayers);
             }
-
-            playbackData.drifters = dataByDrifter;
-            playbackData.maxLength = maxLength;
-
-            playbackSlider.min = 0;
-            playbackSlider.max = maxLength - 1;
-            playbackSlider.value = 0;
-            playbackIndex = 0;
-
-            isPlaybackDataReady = true;
-            playbackControlBox.style.display = 'block';
-            playbackLayer.addTo(map);
-
-            // Show the first step
-            updatePlayback(0);
+            if (allLatLngs.length > 0) map.fitBounds(L.latLngBounds(allLatLngs).pad(0.1));
         }
 
-        /**
-         * Updates the playback markers on the map to a specific index.
-         * @param {number | string} index The step/index to display.
-         */
-        function updatePlayback(index) {
-            if (!isPlaybackDataReady) return;
+        function showMetricsChartModal(positionsData, drifterName) {
+            currentPositionsData = positionsData;
+            const metrics = new Set();
+            positionsData.forEach(pos => {
+                if (pos.battery_level !== null) metrics.add('battery_level');
+                if (pos.other_data) Object.keys(pos.other_data).forEach(k => { if (typeof pos.other_data[k] === 'number') metrics.add(k); });
+            });
+            const metricsList = Array.from(metrics).sort();
+            metricSelector.innerHTML = '';
+            metricsList.forEach(m => {
+                const opt = document.createElement('option'); opt.value = m; opt.textContent = m.toUpperCase().replace(/_/g, ' ');
+                metricSelector.appendChild(opt);
+            });
+            metricSelector.value = metricsList.includes('sst') ? 'sst' : (metricsList.includes('sst_c') ? 'sst_c' : (metricsList[0] || ''));
+            refreshChart(drifterName);
+            sstModal.classList.remove('hidden'); sstModal.classList.add('flex');
+        }
 
-            playbackIndex = parseInt(index);
-            playbackSlider.value = playbackIndex;
-            playbackLayer.clearLayers();
+        function refreshChart(drifterName) {
+            if (!currentPositionsData) return;
+            const m = metricSelector.value;
+            if (!m) return;
+            const chartData = currentPositionsData.slice().reverse(); 
+            const labels = chartData.map(pos => new Date(pos.timestamp).toLocaleString());
+            const values = chartData.map(pos => m === 'battery_level' ? pos.battery_level : pos.other_data?.[m] ?? null);
+            if (sstChartInstance) sstChartInstance.destroy();
+            sstModalTitle.textContent = `${m.toUpperCase()} Time-series: ${drifterName}`;
+            sstChartInstance = new Chart(sstChartCanvas, {
+                type: 'line',
+                data: { labels, datasets: [{ label: m.toUpperCase(), data: values, borderColor: '#0056b3', backgroundColor: 'rgba(0, 86, 179, 0.1)', borderWidth: 2, fill: true, tension: 0.1, spanGaps: true }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
 
-            let latestTimestamp = null;
-
-            // For each drifter, plot its marker at the current index
-            for (const [drifterId, positions] of Object.entries(playbackData.drifters)) {
+        function parseCSV(text, fileName) {
+            try {
+                const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+                if (lines.length < 2) return [];
                 
-                // Ensure tracks shorter than the max index just stay at their last point
-                const actualIndex = Math.min(playbackIndex, positions.length - 1);
-                const pos = positions[actualIndex];
-
-                if (!pos) continue; // Skip if no position data
-
-                const color = drifterColorMap[drifterId] || '#333333'; // Get saved color
-
-                // Create the playback marker
-                L.circleMarker([pos.latitude, pos.longitude], { 
-                    radius: 8, 
-                    color: '#ffffff', // White border
-                    weight: 2,
-                    fillColor: color, 
-                    fillOpacity: 1.0,
-                    className: 'playback-marker' // For styling
-                }).addTo(playbackLayer);
-
-                // Find the latest timestamp among all markers at this step
-                const currentTimestamp = new Date(pos.timestamp);
-                if (!latestTimestamp || currentTimestamp > latestTimestamp) {
-                    latestTimestamp = currentTimestamp;
+                let startRow = 1;
+                if (lines[1] && (lines[1].toLowerCase().includes('utc') || lines[1].toLowerCase().includes('degree') || lines[1].toLowerCase().includes('north'))) {
+                    startRow = 2;
                 }
-            }
 
-            // Update the timestamp label
-            playbackTimestampLabel.textContent = latestTimestamp ? latestTimestamp.toLocaleString() : '---';
-        }
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+                const idx = {
+                    lat: headers.findIndex(h => ['latitude', 'lat', 'degrees_north', 'y'].includes(h)),
+                    lon: headers.findIndex(h => ['longitude', 'lon', 'lng', 'degrees_east', 'x'].includes(h)),
+                    time: headers.findIndex(h => ['time', 'timestamp', 'date_time', 'utc'].includes(h)),
+                    date: headers.findIndex(h => h === 'date'),
+                    id: headers.findIndex(h => ['id', 'drifter_id', 'name', 'platform'].includes(h))
+                };
 
-        /**
-         * Toggles the play/pause state of the playback.
-         */
-        function togglePlayPause() {
-            if (isPlaying) {
-                stopPlayback();
-            } else {
-                startPlayback();
-            }
-        }
+                if (idx.lat === -1 || idx.lon === -1) return [];
 
-        /**
-         * Starts the playback timer.
-         */
-        function startPlayback() {
-            if (!isPlaybackDataReady) return;
-            
-            // If at the end, loop to beginning
-            if (playbackIndex >= playbackData.maxLength - 1) {
-                playbackIndex = 0;
-            }
+                const data = [];
+                for (let i = startRow; i < lines.length; i++) {
+                    const vals = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                    if (vals.length < 3) continue;
+                    const lat = parseFloat(vals[idx.lat]), lon = parseFloat(vals[idx.lon]);
+                    if (isNaN(lat) || isNaN(lon)) continue;
 
-            isPlaying = true;
-            playPauseBtn.textContent = 'Pause';
+                    let dateStr = "";
+                    if (idx.date !== -1 && idx.time !== -1 && vals[idx.date]) {
+                        let dPart = vals[idx.date];
+                        if (dPart.includes('/')) {
+                            const p = dPart.split('/');
+                            if (p.length === 3 && p[2].length === 4) dPart = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                        }
+                        dateStr = `${dPart}T${vals[idx.time]}`;
+                    } else {
+                        dateStr = vals[idx.time] || new Date().toISOString();
+                    }
 
-            playbackTimer = setInterval(() => {
-                let nextIndex = playbackIndex + 1;
-                
-                // Stop or loop when reaching the end
-                if (nextIndex >= playbackData.maxLength) {
-                    // stopPlayback(); // Option 1: Stop at end
-                    nextIndex = 0; // Option 2: Loop to start
+                    const ts = new Date(dateStr);
+                    if (isNaN(ts.getTime())) continue;
+
+                    const other = {}; let batt = null;
+                    headers.forEach((h, j) => {
+                        let val = parseFloat(vals[j]);
+                        if (isNaN(val)) val = null; 
+                        if ([idx.lat, idx.lon, idx.time, idx.id, idx.date].includes(j)) return;
+                        if (h.includes('battery')) batt = val;
+                        else if (val !== null) other[h] = val;
+                    });
+                    data.push({ drifter_id: idx.id !== -1 ? vals[idx.id] : `local_${fileName}`, timestamp: ts.toISOString(), latitude: lat, longitude: lon, battery_level: batt, other_data: other });
                 }
-                
-                updatePlayback(nextIndex);
-
-            }, playbackSpeed);
+                return data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            } catch (e) { return []; }
         }
 
-        /**
-         * Stops the playback timer.
-         */
-        function stopPlayback() {
-            isPlaying = false;
-            playPauseBtn.textContent = 'Play';
-            if (playbackTimer) {
-                clearInterval(playbackTimer);
-                playbackTimer = null;
+        function parseGPX(xmlText, fileName) {
+            try {
+                const xml = new DOMParser().parseFromString(xmlText, "text/xml");
+                const trkpts = Array.from(xml.getElementsByTagName("trkpt"));
+                return trkpts.map(pt => ({
+                    drifter_id: `local_${fileName}`,
+                    timestamp: new Date(pt.getElementsByTagName("time")[0]?.textContent || Date.now()).toISOString(),
+                    latitude: parseFloat(pt.getAttribute("lat")), longitude: parseFloat(pt.getAttribute("lon")),
+                    battery_level: null,
+                    other_data: { ele: parseFloat(pt.getElementsByTagName("ele")[0]?.textContent || 0) }
+                })).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            } catch (e) { return []; }
+        }
+
+        function processRawData(content, identifier) {
+            let parsed = identifier.endsWith('.gpx') ? parseGPX(content, identifier) : parseCSV(content, identifier);
+            if (!parsed || parsed.length === 0) { 
+                showNotificationModal("Parsing Error", "No valid tracks found. Check your file format.");
+                loadingEl.style.display = 'none'; return; 
             }
+            if (parsed.length > 5000) parsed = parsed.slice(0, 5000); 
+            dataLayers.clearLayers(); clearSidebar();
+            plotData(parsed); 
+            updateSidebar(parsed[0]);
+            statusEl.textContent = 'Import Mode'; statusEl.className = 'text-sm font-medium px-2 py-1 bg-blue-200 text-blue-800';
+            loadingEl.style.display = 'none';
         }
 
+        // --- 3. EVENT LISTENERS ---
 
-        // --- 9. INITIALIZATION ---
+        document.getElementById('menu-toggle-btn').addEventListener('click', () => { sidebar.classList.toggle('-translate-x-full'); menuOverlay.classList.toggle('hidden'); });
+        document.getElementById('menu-close-btn').addEventListener('click', () => { sidebar.classList.add('-translate-x-full'); menuOverlay.classList.add('hidden'); });
+        menuOverlay.addEventListener('click', () => { sidebar.classList.add('-translate-x-full'); menuOverlay.classList.add('hidden'); });
+        document.getElementById('filter-button').addEventListener('click', fetchAndPlotData);
         
-        // Menu toggle listeners
-        const toggleMenu = () => {
-            sidebar.classList.toggle('-translate-x-full');
-            menuOverlay.classList.toggle('hidden');
-        };
-        menuToggleBtn.addEventListener('click', toggleMenu);
-        menuCloseBtn.addEventListener('click', toggleMenu);
-        menuOverlay.addEventListener('click', toggleMenu);
-
-        // Filter button
-        filterButton.addEventListener('click', () => {
-            fetchAndPlotData();
-            subscribeToChanges(); // Re-subscribe with new filters
+        document.getElementById('import-csv-btn-trigger').addEventListener('click', () => csvFileInput.click());
+        csvFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            loadingEl.style.display = 'flex';
+            const reader = new FileReader();
+            reader.onload = (re) => processRawData(re.target.result, file.name);
+            reader.readAsText(file);
         });
 
-        // Data Action buttons
-        exportCsvButton.addEventListener('click', exportFilteredData);
-        importCsvButton.addEventListener('click', () => csvFileInput.click());
-        csvFileInput.addEventListener('change', handleFileUpload);
-
-        // Modal listeners
-        sstModalCloseBtn.addEventListener('click', hideSstChartModal);
-        sstModal.addEventListener('click', (e) => {
-            if (e.target.id === 'sst-modal') {
-                hideSstChartModal();
-            }
-         });
-
-        // *** NEW: Playback Event Listeners ***
-        playPauseBtn.addEventListener('click', togglePlayPause);
-        playbackSlider.addEventListener('input', (e) => {
-            // If user scrubs the slider, stop playback
-            if (isPlaying) {
-                stopPlayback();
-            }
-            updatePlayback(e.target.value);
+        document.getElementById('export-csv-button').addEventListener('click', async () => {
+            const drifterId = drifterSelect.value;
+            if (drifterId === 'all') return;
+            const { data, error } = await db.from('drifter_positions').select('*').eq('drifter_id', drifterId).limit(2000);
+            if(!data || data.length === 0) return;
+            const blob = new Blob([Object.keys(data[0]).join(',') + '\n' + data.map(r => Object.values(r).join(',')).join('\n')], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'drifter_export.csv'; a.click();
         });
 
+        document.getElementById('sst-modal-close-btn').addEventListener('click', hideSstChartModal);
+        document.getElementById('notification-close-btn').addEventListener('click', hideNotificationModal);
+        document.getElementById('modal-upload-btn').addEventListener('click', () => { hideNotificationModal(); csvFileInput.click(); });
+        metricSelector.addEventListener('change', () => refreshChart(latestNameEl.textContent));
 
         // Initial load
         map.whenReady(async () => {
-            console.log('Map ready.');
-            loadingEl.style.display = 'flex';
             await populateDrifterDropdown();
-            await fetchAndPlotData(); // Initial data load (all drifters)
-            subscribeToChanges(); // Start listening (for all drifters)
+            await fetchAndPlotData(); 
         });
-
     </script>
 </body>
 </html>
-
